@@ -32,11 +32,12 @@ export default class CircularProgress extends React.Component {
   }
 
   render() {
-    const { size, width, tintColor, backgroundColor, style, rotation, linecap, children } = this.props;
+    const { size, width, tintColor, backgroundColor, startDelimiterColor, endDelimiterColor, style, rotation, direction, linecap, children } = this.props;
     const backgroundPath = this.circlePath(size / 2, size / 2, size / 2 - width / 2, 0, 360);
 
     const fill = this.extractFill(this.props.fill);
-    const circlePath = this.circlePath(size / 2, size / 2, size / 2 - width / 2, 0, 360 * fill / 100);
+    const circlePath = this.circlePath(size / 2, size / 2, size / 2 - width / 2, 0, 360 * fill / 100 * (direction === 'clockwise' ? 1 : -1));
+    const borderPath = this.circlePath(size / 2, size / 2, size / 2 - width / 2, 360 * fill / 100 * (direction === 'clockwise' ? 1 : -1), direction === 'clockwise' ? 1 : -1);
 
     return (
       <View style={style}>
@@ -44,13 +45,22 @@ export default class CircularProgress extends React.Component {
           width={size}
           height={size}>
           <Group rotation={rotation - 90} originX={size/2} originY={size/2}>
-            <Shape d={backgroundPath}
-                   stroke={backgroundColor}
-                   strokeWidth={width}/>
+            {backgroundColor !== 'transparent' &&
+              <Shape d={backgroundPath}
+                     stroke={backgroundColor !== 'transparent' ? backgroundColor : 'black'}
+                     strokeWidth={width}/>
+            }
+
             <Shape d={circlePath}
                    stroke={tintColor}
                    strokeWidth={width}
                    strokeCap={linecap}/>
+            {!! endDelimiterColor && 
+              <Shape d={borderPath}
+                   stroke={endDelimiterColor}
+                   strokeWidth={width}
+                   strokeCap={linecap}/>
+            }
           </Group>
         </Surface>
         {
@@ -68,7 +78,10 @@ CircularProgress.propTypes = {
   width: PropTypes.number.isRequired,
   tintColor: PropTypes.string,
   backgroundColor: PropTypes.string,
+  startDelimiterColor: PropTypes.string,
+  endDelimiterColor: PropTypes.string,
   rotation: PropTypes.number,
+  direction: PropTypes.string,
   linecap: PropTypes.string,
   children: PropTypes.func
 }
@@ -77,5 +90,6 @@ CircularProgress.defaultProps = {
   tintColor: 'black',
   backgroundColor: '#e4e4e4',
   rotation: 90,
+  direction: 'clockwise',
   linecap: 'butt'
 }
